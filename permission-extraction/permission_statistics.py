@@ -1,4 +1,5 @@
 import pandas as pd
+from matplotlib import pyplot as plt
 
 data_file = 'permissions-rw.csv' # csv file with permissions
 pd.set_option('display.float_format','{:.0f}'.format)
@@ -9,16 +10,25 @@ permissions_limit = 50
 df_permissions = pd.DataFrame({'Permission':[],
                                 'Times':[]})
 
+def plot_density(permissions):
+    fig = plt.figure()
+    permissions['Quantity'].plot(kind='density')
+    plt.show()
+
+print(df_permissions.head(10))
 def data_stat_values(permissions_numbers):
     permissions_numbers = permissions_numbers['Quantity']
     permissions_mode = permissions_numbers.mode()
     permissions_min = permissions_numbers.min()
     permissions_max = permissions_numbers.max()
     print("Mode: {:.0f}\nMin: {:.0f}\nMax: {:.0f}".format(permissions_mode[0],permissions_min,permissions_max))
+    std = permissions_numbers.std()
+    print("Standard deviation: ", std) # too high when there is no limiti in permission quantity
 
 def get_permission_count(permissions, df_permissions):
     local_df = df_permissions
     for permission in permissions:
+        permission = permission.rstrip()
         permission_empty = local_df[local_df['Permission']==permission]
         if permission_empty.empty:
             local_df = pd.concat([local_df,pd.DataFrame({'Permission':[permission],
@@ -43,6 +53,8 @@ with open(data_file,'r') as permissions:
             df_permissions = get_permission_count(permissions, df_permissions)
 
 data_stat_values(permissions_quantity)
+# plot_density(permissions_quantity)
+print(permissions_quantity.shape)
+df_permissions = df_permissions.sort_values(by=['Times'],ascending=False)
+print(df_permissions.head(15))
 print(anomallies)
-# print(anomallies.shape) # (rows,columns)
-print(df_permissions.head(10))
