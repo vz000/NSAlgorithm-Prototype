@@ -1,5 +1,5 @@
 <h1>Usage</h1>
-To use the script, the following structure should be considered.
+To use main_static.py script, the following structure should be considered.
 
 ````
 │   main_static.py
@@ -11,3 +11,4 @@ To use the script, the following structure should be considered.
             gw004.zip
             ...
 ````
+For permission_statistics.py, a list of permissions must be provided as a csv file inside the same folder as the script.
