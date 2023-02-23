@@ -1,7 +1,7 @@
 import pandas as pd
 from matplotlib import pyplot as plt
 
-data_file = 'permissions-rw.csv' # csv file with permissions
+data_file = 'permissions-gw.csv' # csv file with permissions
 pd.set_option('display.float_format','{:.0f}'.format)
 anomallies = pd.DataFrame({'Cause':[],
                          'Incidence':[]})
@@ -56,5 +56,5 @@ data_stat_values(permissions_quantity)
 # plot_density(permissions_quantity)
 print(permissions_quantity.shape)
 df_permissions = df_permissions.sort_values(by=['Times'],ascending=False)
-print(df_permissions.head(15))
+print(df_permissions['Permission'].head(15))
 print(anomallies)
