@@ -1,60 +1,41 @@
 import pandas as pd
-from matplotlib import pyplot as plt
 
-data_file = 'permissions-gw.csv' # csv file with permissions
-pd.set_option('display.float_format','{:.0f}'.format)
-anomallies = pd.DataFrame({'Cause':[],
-                         'Incidence':[]})
-permissions_quantity = pd.DataFrame({'Quantity':[]})
-permissions_limit = 50
-df_permissions = pd.DataFrame({'Permission':[],
-                                'Times':[]})
+class Permission_Stats():
+    def __init__(self, file_name):
+        self.data_file = file_name # csv file with permissions
+        pd.set_option('display.float_format','{:.0f}'.format)
+        self.anomallies = pd.DataFrame({'Cause':[],
+                                'Incidence':[]})
+        self.permissions_quantity = pd.DataFrame({'Quantity':[]})
+        self.permissions_limit = 50
+        self.df_permissions = pd.DataFrame({'Permission':[],
+                                        'Times':[]})
+        self.read_permission_list()
 
-def plot_density(permissions):
-    fig = plt.figure()
-    permissions['Quantity'].plot(kind='density')
-    plt.show()
+    def get_permission_count(self,permissions):
+        for permission in permissions:
+            permission = permission.rstrip()
+            permission_empty = self.df_permissions[self.df_permissions['Permission']==permission]
+            if permission_empty.empty:
+                self.df_permissions = pd.concat([self.df_permissions,pd.DataFrame({'Permission':[permission],
+                                                                        'Times':1})], ignore_index=True)
+            else:
+                index = self.df_permissions.index[self.df_permissions['Permission'] == permission][0]
+                self.df_permissions.at[index,'Times'] = self.df_permissions.at[index,'Times'] + 1
 
-print(df_permissions.head(10))
-def data_stat_values(permissions_numbers):
-    permissions_numbers = permissions_numbers['Quantity']
-    permissions_mode = permissions_numbers.mode()
-    permissions_min = permissions_numbers.min()
-    permissions_max = permissions_numbers.max()
-    print("Mode: {:.0f}\nMin: {:.0f}\nMax: {:.0f}".format(permissions_mode[0],permissions_min,permissions_max))
-    std = permissions_numbers.std()
-    print("Standard deviation: ", std) # too high when there is no limiti in permission quantity
+    def read_permission_list(self):
+        with open(self.data_file,'r') as permissions:
+            for row in permissions:
+                permissions = row.split(",")
+                permissions_len = len(permissions)
+                if(permissions_len > self.permissions_limit):
+                    self.anomallies = pd.concat([self.anomallies,pd.DataFrame({'Cause':['Total permissions: '+ str(permissions_len)],
+                                            'Incidence':['Too many permissions']})], ignore_index=True)
+                if(permissions_len >= 1 and permissions_len < self.permissions_limit):
+                    self.permissions_quantity = pd.concat([self.permissions_quantity,pd.DataFrame({'Quantity':[permissions_len]})], 
+                                            ignore_index=True)
+                    self.get_permission_count(permissions)
+        self.df_permissions = self.df_permissions.sort_values(by=['Times'],ascending=False)
+        self.df_permissions['Permission'].head(15).to_csv('common-permissions-rw.csv', index=False, header=False)
 
-def get_permission_count(permissions, df_permissions):
-    local_df = df_permissions
-    for permission in permissions:
-        permission = permission.rstrip()
-        permission_empty = local_df[local_df['Permission']==permission]
-        if permission_empty.empty:
-            local_df = pd.concat([local_df,pd.DataFrame({'Permission':[permission],
-                                                                    'Times':1})], ignore_index=True)
-        else:
-            index = local_df.index[local_df['Permission'] == permission][0]
-            local_df.at[index,'Times'] = local_df.at[index,'Times'] + 1
-    return local_df
-
-with open(data_file,'r') as permissions:
-    for row in permissions:
-        permissions = row.split(",")
-        permissions_len = len(permissions)
-        # with a limit of permissions_limit = 50, only 12 samples (8 ransomware, 4 goodware) 
-        # would be inmediately classified as ransomware.
-        if(permissions_len > permissions_limit):
-            anomallies = pd.concat([anomallies,pd.DataFrame({'Cause':['Total permissions: '+ str(permissions_len)],
-                                     'Incidence':['Too many permissions']})], ignore_index=True)
-        if(permissions_len >= 1 and permissions_len < permissions_limit):
-            permissions_quantity = pd.concat([permissions_quantity,pd.DataFrame({'Quantity':[permissions_len]})], 
-                                      ignore_index=True)
-            df_permissions = get_permission_count(permissions, df_permissions)
-
-data_stat_values(permissions_quantity)
-# plot_density(permissions_quantity)
-print(permissions_quantity.shape)
-df_permissions = df_permissions.sort_values(by=['Times'],ascending=False)
-print(df_permissions['Permission'].head(15))
-print(anomallies)
+main = Permission_Stats('permissions-rw.csv')
