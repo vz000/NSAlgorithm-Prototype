@@ -1,18 +1,29 @@
+from permission_statistics import Permission_Stats
 from pprint import pprint
 import sys
-import hashlib
 import pandas as pd
 import numpy as np
 import os
 final_list = []
-file_permissions = 'common-permissions-rw.csv'
+permissions_bin = []
+main = Permission_Stats('permissions-rw.csv')
 
+def to_15bin(integer):
+    return "{0:015b}".format(integer)
+
+file_permissions = 'common-permissions-rw.csv'
+permissions_bin.append(to_15bin(0)) # X
 with open(file_permissions,'r') as list:
+    power = 0
     for row in list:
         if "\n" in row:
-            row = row.rstrip() # ?
+            row = row.rstrip()
+        permission_int = 2 ** power
+        permissions_bin.append(to_15bin(permission_int))
         final_list.append(row)
+        power += 1
 
+print(permissions_bin)
 chunks = []
 times = []
 data_file = 'permissions-rw.csv' # csv file with permissions
@@ -37,9 +48,8 @@ with open(data_file,'r') as permissions:
                     clean_list[-1] = 'X'
             n_gram = clean_list
             if first_match > 0:
-                reversed_list = n_gram[::-1]
                 count = len([i for i in n_gram if i=='X'])
-                if n_gram not in chunks and count <= 1 and len(n_gram) == n and reversed_list not in chunks: # and reversed_list not in chunks:
+                if n_gram not in chunks and count <= 1 and len(n_gram) == n:
                     # print("Reversed:",reversed_list)
                     chunks.append(n_gram)
                     times.append(1)
