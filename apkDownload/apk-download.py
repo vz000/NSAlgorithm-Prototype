@@ -18,7 +18,7 @@ driver = webdriver.Chrome(service=ChromeService(
 driver.implicitly_wait(5)
 cleanList = []
 
-with open("download2.csv",'r') as read_obj:
+with open("download.csv",'r') as read_obj:
     csv_reader = csv.reader(read_obj)
     for row in csv_reader:
         apk_name = str(row[0])
@@ -27,24 +27,22 @@ with open("download2.csv",'r') as read_obj:
             driver.implicitly_wait(5)
             debug_print(driver.title, "title")
             debug_print(driver.current_url)
-            download_element = driver.find_element(By.CLASS_NAME, "first-info")
+            download_element = driver.find_element(By.CLASS_NAME, "first")
             download_a_tag = download_element.find_element(By.TAG_NAME, "a")
-            driver.get(download_a_tag.get_attribute("href"))
+            driver.get(download_a_tag.get_attribute("href")+"/download")
+            debug_print(driver.current_url)
             driver.implicitly_wait(5)
             debug_print(driver.title, "title")
-            go_to_download = driver.find_element(By.CLASS_NAME, "go-to-download")
-            driver.get(go_to_download.get_attribute("href"))
-            debug_print(driver.current_url)
-            download_box = driver.find_element(By.CLASS_NAME, "download-box")
+            #downalod_box
+            driver.implicitly_wait(10)
+            download_box = driver.find_element("xpath", "//div[@class='download-box pc normal-btn ']")
+            driver.implicitly_wait(8)
             download_link = download_box.find_element(By.TAG_NAME, "a")
+            driver.implicitly_wait(8)
+            print(download_link.get_attribute("href"))
             if apk_name in download_link.get_attribute("href"):
-                if apk_name != 'y':
-                    driver.get(download_link.get_attribute("href"))
-                    print("PASS")
-                    print("Downloading....")
-                    cleanList.append([row[0]])
-                else:
-                    cleanList.append(['x'])
+                driver.get(download_link.get_attribute("href"))
+                print("PASS")
             else:
                 print("FAILED")
                 print("APK not found.")
@@ -57,11 +55,6 @@ with open("download2.csv",'r') as read_obj:
         except Exception as e:
             print("FAILED")
             print("Another exception occurred: \n", e)
-
+        driver.implicitly_wait(7)
 driver.quit()
-print("SAVING RESULTS...")
-with open('downloaded.csv','w+',encoding='UTF8') as cleanFile:
-    writer = csv.writer(cleanFile)
-    for row in cleanList:
-        writer.writerow(row)
 print("DONE.")
