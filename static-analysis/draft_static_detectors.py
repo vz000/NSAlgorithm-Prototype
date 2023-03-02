@@ -1,6 +1,12 @@
 from permission_stats import Permission_Stats
 import pandas as pd
 
+'''
+' @param dataset_file - Name of the file where the list of permissions are included. Must be a csv.
+'                       Naming format: permissions-{type}.csv
+' @param type - rw for ransomware, gw for goodware
+' @param n - N-gram size
+'''
 class Permission_Ngram():
     def __init__(self, dataset_file : str, type : str, n : int) -> None:
         self.dataset_file = dataset_file
