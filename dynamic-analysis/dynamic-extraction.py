@@ -8,6 +8,7 @@ apkList = os.listdir(folderName)
 def start_strace(pid, file_logs):
     os.system('adb shell "timeout 15 strace -p ' + str(pid) + ' -o '+ file_logs + '"')
 
+number = 346
 for apk_number in range(0,len(apkList)):
     apkLocation = folderName + apkList[apk_number] # equals sample_name
     os.system('aapt dump badging ' + apkLocation +' > aapt_output.txt')
@@ -24,14 +25,14 @@ for apk_number in range(0,len(apkList)):
         first_line = get_line.readlines()[0]
         process_output = first_line.split(' ')
         pid = [x for x in process_output if x != '']
-        file_logs = '/data/app/logs-sequence'+str(apk_number)+'.txt'
+        file_logs = '/data/app/logs-sequence-'+str(number)+'.txt'
         ex_strace = Thread(target=start_strace, args=(pid[1], file_logs))
         ex_strace.start()
-        os.system('adb shell monkey -p ' + pkg_name + " -v 400 --throttle 600 --pct-touch 100")
         print("Waiting for strace to finish...")
         ex_strace.join()
-        os.system('adb pull '+file_logs)
+        os.system('adb pull '+ file_logs)
     except Exception as e:
         print("Deleting APK...")
         os.remove(apkLocation)
         print(e)
+    number += 1
